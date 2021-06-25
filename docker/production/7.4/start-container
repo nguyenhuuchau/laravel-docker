@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+service php7.4-fpm enable
+service php7.4-fpm start
+usermod -G root laravel
+usermod -G root www-data
+chmod g+rw -R /var/www/html
+if [ ! -z "$WWWUSER" ]; then
+    usermod -u $WWWUSER laravel
+fi
+
+if [ ! -d /.composer ]; then
+    mkdir /.composer
+fi
+
+chmod -R ugo+rw /.composer
+
+if [ $# -gt 0 ];then
+    exec gosu $WWWUSER "$@"
+else
+    /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
+fi
